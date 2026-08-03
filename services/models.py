@@ -37,6 +37,10 @@ class DashboardCase:
     location_text: str
     sop_text: str
     note: str
+    classification_id: str
+    case_judgement: str
+    judgement_result: str
+    actual_scenario: str
     data_errors: tuple[str, ...]
     occurred_at: datetime | None
     is_completed: bool

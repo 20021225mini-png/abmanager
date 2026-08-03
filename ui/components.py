@@ -8,11 +8,37 @@ import streamlit as st
 from config.overdue_rules import OverdueStatus
 from config.texts import DATA_ERROR_TEXT
 from services.models import DashboardCase, StageNode
+from services.sop_models import CaseSopDetail, SopCatalog, SopModule, SopStep
+from services.sop_service import SopService
 
 
-def render_case_table(cases: Sequence[DashboardCase]) -> None:
+def render_case_table(
+    cases: Sequence[DashboardCase],
+    sop_service: SopService,
+    sop_catalog: SopCatalog | None,
+    sop_error: str = "",
+) -> None:
     """顯示雙層表頭、案件列與可展開說明。"""
-    body = "".join(_case_row_html(case) for case in cases)
+    rows: list[str] = []
+    for case in cases:
+        if sop_catalog is None:
+            sop_detail = CaseSopDetail(
+                case_judgement=case.case_judgement or case.abnormal_type,
+                actual_scenario=case.actual_scenario or case.abnormal_type,
+                mapping_message=(
+                    f"SOP 資料讀取失敗：{sop_error}"
+                    if sop_error
+                    else "SOP 資料目前無法讀取。"
+                ),
+            )
+        else:
+            sop_detail = sop_service.build_case_detail(
+                case=case,
+                catalog=sop_catalog,
+            )
+        rows.append(_case_row_html(case, sop_detail))
+
+    body = "".join(rows)
     if not body:
         body = '<div class="empty-state">目前沒有符合篩選條件的案件</div>'
 
@@ -43,7 +69,7 @@ def render_case_table(cases: Sequence[DashboardCase]) -> None:
     st.markdown(table_html, unsafe_allow_html=True)
 
 
-def _case_row_html(case: DashboardCase) -> str:
+def _case_row_html(case: DashboardCase, sop_detail: CaseSopDetail) -> str:
     status_class = {
         OverdueStatus.NORMAL: "normal",
         OverdueStatus.WARNING: "warning",
@@ -75,16 +101,11 @@ def _case_row_html(case: DashboardCase) -> str:
         f"{escape(case.waiting_time_text)}</span></span>"
         f"<span>{escape(case.handler)}</span>"
         "</summary>"
-        '<div class="case-details">'
-        f'{_detail_card("案件基本資訊", _basic_info_text(case))}'
-        f'{_detail_card("異常類型", case.abnormal_type)}'
-        f'{_detail_card("目前階段", case.current_stage)}'
-        f'{_detail_card("相關儲位或台車資訊", case.location_text, wide=True)}'
-        f'{_detail_card("處理人員", case.handler)}'
-        f'{_detail_card("SOP 內容", case.sop_text, wide=True)}'
-        f'{_detail_card("備註", case.note)}'
-        f"{errors}"
+        '<div class="case-details-layout">'
+        f"{_sop_panel_html(sop_detail)}"
+        f"{_case_summary_panel_html(case, sop_detail)}"
         "</div>"
+        f"{errors}"
         "</details>"
     )
 
@@ -109,20 +130,123 @@ def _badge_html(css_class: str, value: str) -> str:
     return f'<span class="{css_class}">{escape(value)}</span>'
 
 
-def _detail_card(label: str, value: str, wide: bool = False) -> str:
-    wide_class = " wide" if wide else ""
+def _sop_panel_html(detail: CaseSopDetail) -> str:
+    if detail.modules:
+        modules = "".join(
+            _sop_module_html(index=index, module=module)
+            for index, module in enumerate(detail.modules, start=1)
+        )
+    else:
+        modules = '<div class="sop-empty">目前找不到可顯示的處理 SOP</div>'
+
+    message = ""
+    if detail.mapping_message:
+        message = (
+            '<div class="sop-message">'
+            f"{escape(detail.mapping_message)}"
+            "</div>"
+        )
+
     return (
-        f'<div class="detail-card{wide_class}">'
-        f'<span class="detail-label">{escape(label)}</span>'
-        f'<span class="detail-value">{escape(value)}</span>'
+        '<section class="detail-panel sop-panel">'
+        '<h2 class="detail-panel-title">處理 SOP</h2>'
+        '<div class="sop-scroll">'
+        f"{modules}"
+        "</div>"
+        f"{message}"
+        "</section>"
+    )
+
+
+def _sop_module_html(index: int, module: SopModule) -> str:
+    steps = "".join(_sop_step_html(step) for step in module.steps)
+    return (
+        '<section class="sop-module">'
+        '<div class="sop-module-heading">'
+        f'<span class="sop-module-index">{index}</span>'
+        '<span>'
+        f'<strong>{escape(module.flow_name)}</strong>'
+        f'<small>{escape(module.sop_id)}</small>'
+        "</span>"
+        "</div>"
+        f'<div class="sop-steps">{steps}</div>'
+        "</section>"
+    )
+
+
+def _sop_step_html(step: SopStep) -> str:
+    required_data = ""
+    if step.required_data:
+        required_data = (
+            '<div class="sop-required">'
+            '<span>所需資料</span>'
+            f"{escape(step.required_data)}"
+            "</div>"
+        )
+
+    branches = ""
+    if step.branches:
+        branch_rows = "".join(
+            (
+                '<div class="sop-branch">'
+                f'<span>若 <strong>{escape(branch.label)}</strong></span>'
+                f'<span class="branch-arrow">→</span>'
+                f'<span>{escape(branch.destination)}</span>'
+                "</div>"
+            )
+            for branch in step.branches
+        )
+        branches = f'<div class="sop-branches">{branch_rows}</div>'
+
+    result = ""
+    if step.result:
+        result = f'<div class="sop-result">{escape(step.result)}</div>'
+
+    notice = ""
+    if step.notice:
+        notice = f'<div class="sop-notice">{escape(step.notice)}</div>'
+
+    return (
+        '<div class="sop-step">'
+        '<div class="sop-step-head">'
+        f'<span class="sop-step-number">步驟 {escape(step.step_no)}</span>'
+        f'<span class="sop-instruction">{escape(step.instruction)}</span>'
+        "</div>"
+        f"{required_data}{branches}{result}{notice}"
         "</div>"
     )
 
 
-def _basic_info_text(case: DashboardCase) -> str:
+def _case_summary_panel_html(
+    case: DashboardCase,
+    detail: CaseSopDetail,
+) -> str:
+    items = "".join(
+        (
+            _summary_item_html("案件編號", case.case_no),
+            _summary_item_html("件號", case.part_no),
+            _summary_item_html("備註", case.note, wide=True),
+            _summary_item_html("本案判定", detail.case_judgement, wide=True),
+            _summary_item_html("主類型", detail.main_type, wide=True),
+            _summary_item_html("實際情境", detail.actual_scenario, wide=True),
+            _summary_item_html("判定條件", detail.condition_text, wide=True),
+            _summary_item_html("判斷結果", case.judgement_result, wide=True),
+        )
+    )
     return (
-        f"案件編號：{case.case_no}\n"
-        f"商品別：{case.product_type}\n"
-        f"件號：{case.part_no}\n"
-        f"數量：{case.quantity}"
+        '<aside class="detail-panel case-summary-panel">'
+        '<h2 class="detail-panel-title">案件摘要</h2>'
+        f'<div class="summary-grid">{items}</div>'
+        "</aside>"
+    )
+
+
+def _summary_item_html(label: str, value: str, wide: bool = False) -> str:
+    css_class = "summary-item summary-wide" if wide else "summary-item"
+    displayed_value = value or "尚未填寫"
+    return (
+        f'<div class="{css_class}">'
+        f'<span class="summary-label">{escape(label)}</span>'
+        f'<span class="summary-value">{escape(displayed_value)}</span>'
+        "</div>"
     )

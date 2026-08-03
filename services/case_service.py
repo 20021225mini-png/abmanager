@@ -14,7 +14,6 @@ from config.texts import (
     PENDING_FILTER,
     PROCESSING_FILTER,
     SHELVING_ENABLED_FINAL_RESOLUTIONS,
-    SOP_BY_ABNORMAL_TYPE,
     SORT_NEWEST_FIRST,
     SORT_OVERDUE_FIRST,
     SORT_WAITING_LONGEST,
@@ -124,8 +123,8 @@ class CaseService:
         row: Mapping[str, Any],
         now: datetime,
     ) -> DashboardCase:
-        # 第一版直接顯示 CASE 工作表的 SITUATION。
-        # TODO: 待異常類型對照表確認後，再集中於 config 套用轉換規則。
+        # 列表保留 CASE 的 SITUATION；案件展開後由 SopService 補入
+        # 主類型、實際情境、判定條件與完整 SOP。
         situation = self._text(row.get(columns.SITUATION))
         abnormal_type = situation
         final_resolution = self._text(row.get(columns.FINAL_RESOLUTION))
@@ -200,11 +199,20 @@ class CaseService:
             handler=self._text(row.get(columns.HANDLER)),
             product_type=self._text(row.get(columns.PRODUCT_TYPE)),
             location_text=location_text,
-            sop_text=SOP_BY_ABNORMAL_TYPE.get(
-                abnormal_type,
-                "",
-            ),
+            sop_text="",
             note=self._text(row.get(columns.NOTE)),
+            classification_id=self._text(
+                row.get(columns.CLASSIFICATION_ID)
+            ),
+            case_judgement=self._text(
+                row.get(columns.CASE_JUDGEMENT)
+            ),
+            judgement_result=self._text(
+                row.get(columns.JUDGEMENT_RESULT)
+            ),
+            actual_scenario=self._text(
+                row.get(columns.ACTUAL_SCENARIO)
+            ),
             data_errors=errors,
             occurred_at=created_at,
             is_completed=waiting.closed_at is not None,

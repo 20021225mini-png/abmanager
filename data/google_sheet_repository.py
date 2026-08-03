@@ -4,7 +4,11 @@ from typing import Any
 
 import pandas as pd
 
-from config.columns import ALL_SOURCE_COLUMNS, REQUIRED_SOURCE_COLUMNS
+from config.columns import (
+    ALL_SOURCE_COLUMNS,
+    REQUIRED_SOURCE_COLUMNS,
+    SOURCE_COLUMN_ALIASES,
+)
 from config.settings import CASE_SHEET_CSV_URL
 from data.case_repository import CaseDataset, DataSourceError
 
@@ -23,6 +27,15 @@ class GoogleSheetCaseRepository:
             raise DataSourceError(f"CASE 工作表讀取失敗：{exc}") from exc
 
         frame.columns = [str(column).strip() for column in frame.columns]
+        for canonical_name, aliases in SOURCE_COLUMN_ALIASES.items():
+            if canonical_name in frame.columns:
+                continue
+            source_name = next(
+                (alias for alias in aliases if alias in frame.columns),
+                None,
+            )
+            if source_name is not None:
+                frame[canonical_name] = frame[source_name]
         warnings: list[str] = []
 
         missing_required = [

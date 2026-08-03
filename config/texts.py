@@ -58,8 +58,5 @@ OVERDUE_FILTER_LABELS: dict[str, str] = {
     "OVERDUE": "逾期",
 }
 
-# 第一版的異常類型直接顯示 CASE 工作表的 SITUATION。
-# TODO: 待使用者提供異常類型對照表後，再於 config 新增轉換規則。
-
-# TODO: 異常類型對應的 SOP 尚未確認。
-SOP_BY_ABNORMAL_TYPE: dict[str, str] = {}
+# 列表沿用 CASE 工作表的 SITUATION；展開後由獨立 SOP 規則表補入
+# 主類型、實際情境、判定條件與共用 SOP。

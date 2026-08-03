@@ -8,6 +8,7 @@ from config.settings import (
     CACHE_TTL_SECONDS,
     PAGE_LAYOUT,
     PAGE_TITLE,
+    SOP_CACHE_TTL_SECONDS,
 )
 from config.texts import (
     APP_TITLE,
@@ -17,6 +18,8 @@ from config.texts import (
 )
 from services.case_service import CaseService, DashboardLoadError
 from services.models import DashboardCase, DashboardFilters, DashboardSnapshot
+from services.sop_models import SopCatalog
+from services.sop_service import SopLoadError, SopService
 from ui.components import render_case_table
 from ui.styles import DASHBOARD_CSS
 
@@ -27,7 +30,13 @@ def _load_snapshot(_case_service: CaseService) -> DashboardSnapshot:
     return _case_service.load_snapshot()
 
 
-def render_dashboard(case_service: CaseService) -> None:
+@st.cache_data(ttl=SOP_CACHE_TTL_SECONDS, show_spinner=False)
+def _load_sop_catalog(_sop_service: SopService) -> SopCatalog:
+    """SOP 每五分鐘更新一次，與 CASE 的分鐘級更新分開。"""
+    return _sop_service.load_catalog()
+
+
+def render_dashboard(case_service: CaseService, sop_service: SopService) -> None:
     """顯示完整看板。"""
     st.set_page_config(
         page_title=PAGE_TITLE,
@@ -45,6 +54,20 @@ def render_dashboard(case_service: CaseService) -> None:
 
     for warning in snapshot.source_warnings:
         st.warning(warning)
+
+    sop_catalog: SopCatalog | None = None
+    sop_error = ""
+    try:
+        sop_catalog = _load_sop_catalog(sop_service)
+    except SopLoadError as exc:
+        sop_error = str(exc)
+        st.warning(
+            "案件列表可正常使用；SOP 資料目前無法讀取。"
+            "請確認兩張 SOP 工作表為可檢視，且欄位名稱未變更。"
+        )
+    if sop_catalog is not None:
+        for warning in sop_catalog.warnings:
+            st.warning(warning)
 
     (
         search_text,
@@ -79,7 +102,12 @@ def render_dashboard(case_service: CaseService) -> None:
         ),
         unsafe_allow_html=True,
     )
-    render_case_table(filtered_cases)
+    render_case_table(
+        cases=filtered_cases,
+        sop_service=sop_service,
+        sop_catalog=sop_catalog,
+        sop_error=sop_error,
+    )
 
 
 def _render_stage_filter(
@@ -136,6 +164,7 @@ def _render_search_and_filters(
     with refresh_col:
         if st.button("重新整理", use_container_width=True):
             _load_snapshot.clear()
+            _load_sop_catalog.clear()
             st.rerun()
 
     return search_text, abnormal_type, overdue_status, sort_by

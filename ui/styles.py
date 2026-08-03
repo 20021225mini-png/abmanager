@@ -260,42 +260,247 @@ DASHBOARD_CSS = """
         box-shadow: 0 0 0 4px rgba(242, 162, 58, .12);
     }
 
-    .case-details {
+    .case-details-layout {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        padding: 2px 18px 18px;
-        background: #f8fbff;
+        grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+        gap: 16px;
+        padding: 18px;
+        background: #f5f9ff;
+        align-items: start;
     }
 
-    .detail-card {
-        min-height: 88px;
-        padding: 14px 16px;
-        border: 1px solid #e1ebf8;
-        border-radius: 12px;
-        background: white;
+    .detail-panel {
+        min-width: 0;
+        border: 1px solid #dce8f7;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 8px 24px rgba(24, 57, 96, .05);
     }
 
-    .detail-card.wide {
-        grid-column: span 2;
+    .detail-panel-title {
+        margin: 0;
+        padding: 15px 18px;
+        border-bottom: 1px solid #e5edf8;
+        color: var(--hotai-blue-dark);
+        font-size: 1.02rem;
+        font-weight: 800;
+        letter-spacing: .04em;
     }
 
-    .detail-label {
+    .sop-scroll {
+        max-height: 620px;
+        padding: 14px 16px 18px;
+        overflow-y: auto;
+        scrollbar-color: #b8c9e0 transparent;
+        scrollbar-width: thin;
+    }
+
+    .sop-module + .sop-module {
+        margin-top: 16px;
+    }
+
+    .sop-module-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #edf5ff;
+        color: #123f7a;
+    }
+
+    .sop-module-heading strong,
+    .sop-module-heading small {
         display: block;
-        margin-bottom: 6px;
-        color: #6a7f9b;
+    }
+
+    .sop-module-heading small {
+        margin-top: 2px;
+        color: #7185a0;
+        font-size: .7rem;
+        font-weight: 600;
+    }
+
+    .sop-module-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 28px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--hotai-blue);
+        color: white;
+        font-weight: 800;
+    }
+
+    .sop-steps {
+        margin-left: 14px;
+        padding-left: 22px;
+        border-left: 2px solid #d4e3f6;
+    }
+
+    .sop-step {
+        position: relative;
+        padding: 13px 0 14px;
+        border-bottom: 1px dashed #dfe8f3;
+    }
+
+    .sop-step:last-child {
+        border-bottom: none;
+    }
+
+    .sop-step::before {
+        content: "";
+        position: absolute;
+        top: 21px;
+        left: -29px;
+        width: 10px;
+        height: 10px;
+        border: 3px solid #ffffff;
+        border-radius: 50%;
+        background: var(--hotai-blue);
+        box-shadow: 0 0 0 1px #a9c4e8;
+    }
+
+    .sop-step-head {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: start;
+    }
+
+    .sop-step-number {
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #e8f2ff;
+        color: #0c59b5;
+        font-size: .72rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .sop-instruction {
+        color: #183960;
+        font-weight: 700;
+        line-height: 1.55;
+    }
+
+    .sop-required {
+        margin: 8px 0 0 72px;
+        color: #657892;
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .sop-required > span {
+        margin-right: 6px;
+        color: #3d5d84;
+        font-weight: 800;
+    }
+
+    .sop-branches {
+        display: grid;
+        gap: 7px;
+        margin: 10px 0 0 72px;
+    }
+
+    .sop-branch {
+        display: grid;
+        grid-template-columns: minmax(110px, auto) 18px 1fr;
+        gap: 7px;
+        padding: 9px 10px;
+        border-left: 3px solid #f2a23a;
+        border-radius: 6px;
+        background: #fff8e9;
+        color: #5a4a2d;
+        font-size: .8rem;
+        line-height: 1.45;
+    }
+
+    .branch-arrow {
+        color: #c96a00;
+        font-weight: 800;
+    }
+
+    .sop-result,
+    .sop-notice {
+        margin: 9px 0 0 72px;
+        padding: 8px 10px;
+        border-radius: 7px;
         font-size: .78rem;
         font-weight: 700;
+        line-height: 1.5;
     }
 
-    .detail-value {
+    .sop-result {
+        background: #eaf8f1;
+        color: #08764b;
+    }
+
+    .sop-notice {
+        background: #fff1f1;
+        color: #c71921;
+    }
+
+    .sop-message,
+    .sop-empty {
+        margin: 14px 16px 16px;
+        padding: 11px 12px;
+        border-radius: 8px;
+        background: #fff7e6;
+        color: #945400;
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .sop-empty {
+        margin: 0;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .summary-item {
+        min-width: 0;
+        padding: 11px 12px;
+        border: 1px solid #e3eaf4;
+        border-radius: 9px;
+        background: #f8fafe;
+    }
+
+    .summary-wide {
+        grid-column: 1 / -1;
+    }
+
+    .summary-label,
+    .summary-value {
+        display: block;
+    }
+
+    .summary-label {
+        margin-bottom: 4px;
+        color: #6a7f9b;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .summary-value {
         color: #183960;
+        font-size: .86rem;
+        font-weight: 650;
         line-height: 1.55;
+        overflow-wrap: anywhere;
         white-space: pre-wrap;
     }
 
     .data-errors {
-        grid-column: 1 / -1;
+        margin: 0 18px 18px;
         padding: 10px 14px;
         border-radius: 8px;
         background: #fff0f0;
@@ -310,12 +515,31 @@ DASHBOARD_CSS = """
     }
 
     @media (max-width: 900px) {
-        .case-details {
+        .case-details-layout {
             grid-template-columns: 1fr;
         }
 
-        .detail-card.wide {
-            grid-column: auto;
+        .sop-scroll {
+            max-height: none;
+        }
+
+        .sop-step-head {
+            grid-template-columns: 1fr;
+        }
+
+        .sop-required,
+        .sop-branches,
+        .sop-result,
+        .sop-notice {
+            margin-left: 0;
+        }
+
+        .sop-branch {
+            grid-template-columns: 1fr;
+        }
+
+        .branch-arrow {
+            transform: rotate(90deg);
         }
     }
 </style>
