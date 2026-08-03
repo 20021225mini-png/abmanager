@@ -4,12 +4,7 @@ from typing import Sequence
 
 import streamlit as st
 
-from config.settings import (
-    CACHE_TTL_SECONDS,
-    PAGE_LAYOUT,
-    PAGE_TITLE,
-    SOP_CACHE_TTL_SECONDS,
-)
+from config import settings as app_settings
 from config.texts import (
     APP_TITLE,
     OVERDUE_FILTER_LABELS,
@@ -22,6 +17,16 @@ from services.sop_models import SopCatalog
 from services.sop_service import SopLoadError, SopService
 from ui.components import render_case_table
 from ui.styles import DASHBOARD_CSS
+
+
+CACHE_TTL_SECONDS = getattr(app_settings, "CACHE_TTL_SECONDS", 60)
+SOP_CACHE_TTL_SECONDS = getattr(app_settings, "SOP_CACHE_TTL_SECONDS", 300)
+PAGE_TITLE = getattr(
+    app_settings,
+    "PAGE_TITLE",
+    "進出異常案件 Follow 看板",
+)
+PAGE_LAYOUT = getattr(app_settings, "PAGE_LAYOUT", "wide")
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)

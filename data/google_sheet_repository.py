@@ -4,13 +4,25 @@ from typing import Any
 
 import pandas as pd
 
+from config import settings as app_settings
 from config.columns import (
     ALL_SOURCE_COLUMNS,
     REQUIRED_SOURCE_COLUMNS,
     SOURCE_COLUMN_ALIASES,
 )
-from config.settings import CASE_SHEET_CSV_URL
 from data.case_repository import CaseDataset, DataSourceError
+
+
+_CASE_GOOGLE_SHEET_ID = "1MTPfTw0i-DWZbNzfXtKUOS56UI_xaedKIAzM9E7ecD4"
+_DEFAULT_CASE_SHEET_CSV_URL = (
+    f"https://docs.google.com/spreadsheets/d/{_CASE_GOOGLE_SHEET_ID}"
+    "/export?format=csv&gid=1219451878"
+)
+CASE_SHEET_CSV_URL = getattr(
+    app_settings,
+    "CASE_SHEET_CSV_URL",
+    _DEFAULT_CASE_SHEET_CSV_URL,
+)
 
 
 class GoogleSheetCaseRepository:

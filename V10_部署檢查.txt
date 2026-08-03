@@ -1,11 +1,17 @@
-V10 ImportError 修復
+V10.1 ImportError 修復
 
 錯誤位置：
 from config.settings import SOP_NODES_CSV_URL, SOP_RULES_CSV_URL
 
-原因：
-GitHub 的 data/google_sheet_sop_repository.py 已更新為 V10，
-但 config/settings.py 仍停留在 V9，因此找不到 V10 新增的 SOP 設定。
+修正內容：
+新版保留完整 config/settings.py，同時在資料讀取模組內加入正確的
+CASE 與 SOP 備援網址。即使 Streamlit Cloud 在部署更新期間暫時讀到
+舊版設定檔，也不會再因缺少 SOP_NODES_CSV_URL 或
+SOP_RULES_CSV_URL 而停止啟動。
+
+資料角色：
+1. CASE 工作表：讀取案件資料；V11 也只寫回這張表。
+2. 異常案件處理 SOP：只讀取 CLASSIFICATION_RULES 與 SOP_NODES。
 
 處理方式：
 1. 將此資料夾內的檔案解壓縮。

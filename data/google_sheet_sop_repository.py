@@ -8,6 +8,29 @@ from config import settings as app_settings
 from data.sop_repository import SopDataset, SopDataSourceError
 
 
+# 保留內建資料來源，避免 Streamlit Cloud 在部署更新期間暫時讀到舊版
+# config/settings.py 時，因缺少 V10 新增常數而直接 ImportError。
+_SOP_GOOGLE_SHEET_ID = "1sWFKUs2yDYKAyOTxPQeVqN6H9Ta00gq8VGOfzuoM_AM"
+_DEFAULT_SOP_RULES_CSV_URL = (
+    f"https://docs.google.com/spreadsheets/d/{_SOP_GOOGLE_SHEET_ID}"
+    "/gviz/tq?tqx=out:csv&sheet=CLASSIFICATION_RULES"
+)
+_DEFAULT_SOP_NODES_CSV_URL = (
+    f"https://docs.google.com/spreadsheets/d/{_SOP_GOOGLE_SHEET_ID}"
+    "/gviz/tq?tqx=out:csv&sheet=SOP_NODES"
+)
+SOP_RULES_CSV_URL = getattr(
+    app_settings,
+    "SOP_RULES_CSV_URL",
+    _DEFAULT_SOP_RULES_CSV_URL,
+)
+SOP_NODES_CSV_URL = getattr(
+    app_settings,
+    "SOP_NODES_CSV_URL",
+    _DEFAULT_SOP_NODES_CSV_URL,
+)
+
+
 REQUIRED_RULE_COLUMNS: frozenset[str] = frozenset(
     {
         "classification_id",

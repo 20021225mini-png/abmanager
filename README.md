@@ -2,7 +2,7 @@
 
 使用 Python 與 Streamlit 建立的異常案件 MVP 看板。
 
-## V10 部署修正
+## V10.1 部署修正
 
 若錯誤停在：
 
@@ -10,7 +10,8 @@
 from config.settings import SOP_NODES_CSV_URL, SOP_RULES_CSV_URL
 ```
 
-代表 GitHub 內的 V9／V10 模組版本不一致。請將本壓縮檔的
+本版已加入舊設定檔相容處理，不會再因缺少這兩個新常數而停止啟動。
+請將本壓縮檔的
 `app.py`、`requirements.txt`、`config/`、`data/`、`services/`、`ui/`
 完整覆蓋到 GitHub 根目錄。`CLASSIFICATION_ID` 與 `JUDGEMENT_RESULT`
 可以保留，這兩欄不會造成匯入錯誤。
@@ -41,24 +42,22 @@ streamlit run app.py
 
 ## Google Sheet 資料來源
 
-- CASE：原本的案件工作表。
-- SOP：`異常案件處理SOP`，程式依工作表名稱讀取：
+- CASE：試算表 `1MTP...E7ecD4` 的 `CASE` 工作表（gid `1219451878`）。
+- SOP：試算表 `1sW...oM_AM`，程式依工作表名稱唯讀：
   - `CLASSIFICATION_RULES`
   - `SOP_NODES`
 
 兩張 SOP 工作表需保留現有程式欄名，並設定為部署環境可檢視。
 
-## CASE 可選欄位
+## CASE 判定欄位
 
-V10 可直接沿用目前 CASE 欄位。若要讓右側摘要完整且唯一對應，建議
-逐步增加下列欄位：
+目前 CASE 已新增以下兩欄，請保留：
 
-- `classification_id`：分類編號，例如 `IN-10`；只供程式比對。
-- `case_judgement`：本案判定。
-- `actual_scenario`：實際情境。
-- `judgement_result`：判斷結果。
+- `CLASSIFICATION_ID`：分類編號，例如 `IN-10`；只供程式比對。
+- `JUDGEMENT_RESULT`：本案實際判斷結果。
 
-程式也接受對應的大寫欄名與中文欄名。欄位尚未加入時，會先用
+`CASE_JUDGEMENT` 與 `ACTUAL_SCENARIO` 維持可選；畫面可透過分類編號
+從 SOP 分類表帶出。分類編號尚未填寫時，程式會先用
 `SITUATION` 比對分類規則；無法唯一判定的摘要維持「尚未填寫」，不會
 任意抓取第一筆規則。
 
