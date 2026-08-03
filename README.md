@@ -2,6 +2,19 @@
 
 使用 Python 與 Streamlit 建立的異常案件 MVP 看板。
 
+## V10 部署修正
+
+若錯誤停在：
+
+```text
+from config.settings import SOP_NODES_CSV_URL, SOP_RULES_CSV_URL
+```
+
+代表 GitHub 內的 V9／V10 模組版本不一致。請將本壓縮檔的
+`app.py`、`requirements.txt`、`config/`、`data/`、`services/`、`ui/`
+完整覆蓋到 GitHub 根目錄。`CLASSIFICATION_ID` 與 `JUDGEMENT_RESULT`
+可以保留，這兩欄不會造成匯入錯誤。
+
 ## V10 更新
 
 - 保留 V9 的案件列表、階段篩選、等待時間與台灣工作日判斷。

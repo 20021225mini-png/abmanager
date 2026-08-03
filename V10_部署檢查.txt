@@ -1,0 +1,20 @@
+V10 ImportError 修復
+
+錯誤位置：
+from config.settings import SOP_NODES_CSV_URL, SOP_RULES_CSV_URL
+
+原因：
+GitHub 的 data/google_sheet_sop_repository.py 已更新為 V10，
+但 config/settings.py 仍停留在 V9，因此找不到 V10 新增的 SOP 設定。
+
+處理方式：
+1. 將此資料夾內的檔案解壓縮。
+2. 從 app.py、requirements.txt、config、data、services、ui 一起上傳並覆蓋 GitHub 根目錄的同名檔案。
+3. 確認 GitHub 的 config/settings.py 內可以搜尋到：
+   SOP_RULES_CSV_URL
+   SOP_NODES_CSV_URL
+   SOP_CACHE_TTL_SECONDS
+4. 等待 Streamlit Cloud 重新部署，或在 Manage app 中重新啟動。
+
+CASE 工作表新增 CLASSIFICATION_ID 與 JUDGEMENT_RESULT 是正確的，
+兩欄請保留；它們不會造成 Python ImportError。
