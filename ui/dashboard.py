@@ -11,11 +11,14 @@ from config.texts import (
     SORT_OPTIONS,
     STAGE_FILTER_ORDER,
 )
+from data.case_writer import CaseWriter
 from services.case_service import CaseService, DashboardLoadError
+from services.judgement_service import JudgementService
 from services.models import DashboardCase, DashboardFilters, DashboardSnapshot
 from services.sop_models import SopCatalog
 from services.sop_service import SopLoadError, SopService
 from ui.components import render_case_table
+from ui.judgement import render_judgement_workspace
 from ui.styles import DASHBOARD_CSS
 
 
@@ -41,7 +44,12 @@ def _load_sop_catalog(_sop_service: SopService) -> SopCatalog:
     return _sop_service.load_catalog()
 
 
-def render_dashboard(case_service: CaseService, sop_service: SopService) -> None:
+def render_dashboard(
+    case_service: CaseService,
+    sop_service: SopService,
+    judgement_service: JudgementService,
+    case_writer: CaseWriter | None,
+) -> None:
     """顯示完整看板。"""
     st.set_page_config(
         page_title=PAGE_TITLE,
@@ -74,6 +82,9 @@ def render_dashboard(case_service: CaseService, sop_service: SopService) -> None
         for warning in sop_catalog.warnings:
             st.warning(warning)
 
+    if success_message := st.session_state.pop("v11_write_success", ""):
+        st.success(success_message)
+
     (
         search_text,
         abnormal_type,
@@ -87,6 +98,15 @@ def render_dashboard(case_service: CaseService, sop_service: SopService) -> None
         case_service=case_service,
         cases=snapshot.cases,
     )
+    saved = render_judgement_workspace(
+        cases=snapshot.cases,
+        catalog=sop_catalog,
+        judgement_service=judgement_service,
+        case_writer=case_writer,
+    )
+    if saved:
+        _load_snapshot.clear()
+        st.rerun()
     filters = DashboardFilters(
         search_text=search_text,
         stage=stage,

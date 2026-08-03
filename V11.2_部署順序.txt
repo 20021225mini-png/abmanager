@@ -1,0 +1,39 @@
+V11.2 部署順序
+
+一、先更新 SOP Google Sheet
+1. 開啟第二份 SOP 試算表。
+2. 依「V11.2_SOP更新資料_上架完仍有剩餘.xlsx」更新：
+   - CLASSIFICATION_RULES
+   - SOP_NODES
+3. 保留工作表名稱與第一列表頭。
+4. SOP 試算表只供程式讀取，不寫回案件資料。
+
+二、再完整更新 GitHub 程式
+請完整覆蓋下列項目，不要只替換單一 Python 檔：
+   app.py
+   requirements.txt
+   config/
+   data/
+   services/
+   ui/
+   gas/
+
+三、確認 V11 寫回設定
+1. CASE 寫回目標仍為第一份 CASE 試算表。
+2. CASE 工作表保留：
+   - CLASSIFICATION_ID
+   - JUDGEMENT_RESULT
+3. Apps Script 與 Streamlit Secrets 依 README.md 設定。
+
+四、重新部署與檢查
+1. GitHub Commit 後，等待原 Streamlit App 自動部署。
+2. 到 Manage app 重新啟動原 App，不需建立新網址。
+3. 按看板「重新整理」。
+4. 以「上架完仍有剩餘」案件確認：
+   - 判定區顯示五個中文選項。
+   - 儲存後 CLASSIFICATION_ID 寫回 IN-08A～IN-08E 其中一項。
+   - 案件摘要顯示在 SOP 上方。
+   - SOP 第一個模組展開，其他模組可按需展開。
+
+待確認項目
+包裝件確認少開後的補開方式與結案條件尚未定案；目前畫面會明確標示待確認。

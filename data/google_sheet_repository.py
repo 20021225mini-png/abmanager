@@ -1,6 +1,7 @@
 """從公開 Google Sheet CASE 工作表讀取案件資料。"""
 
 from typing import Any
+import time
 
 import pandas as pd
 
@@ -34,7 +35,11 @@ class GoogleSheetCaseRepository:
     def load_cases(self) -> CaseDataset:
         """讀取 CASE 工作表，並將缺少欄位補為空值。"""
         try:
-            frame = pd.read_csv(self._csv_url, dtype=object)
+            csv_url = self._csv_url
+            if csv_url.startswith(("http://", "https://")):
+                separator = "&" if "?" in csv_url else "?"
+                csv_url = f"{csv_url}{separator}_v11={time.time_ns()}"
+            frame = pd.read_csv(csv_url, dtype=object)
         except Exception as exc:
             raise DataSourceError(f"CASE 工作表讀取失敗：{exc}") from exc
 

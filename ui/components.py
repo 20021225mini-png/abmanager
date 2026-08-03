@@ -102,8 +102,8 @@ def _case_row_html(case: DashboardCase, sop_detail: CaseSopDetail) -> str:
         f"<span>{escape(case.handler)}</span>"
         "</summary>"
         '<div class="case-details-layout">'
-        f"{_sop_panel_html(sop_detail)}"
         f"{_case_summary_panel_html(case, sop_detail)}"
+        f"{_sop_panel_html(sop_detail)}"
         "</div>"
         f"{errors}"
         "</details>"
@@ -132,12 +132,21 @@ def _badge_html(css_class: str, value: str) -> str:
 
 def _sop_panel_html(detail: CaseSopDetail) -> str:
     if detail.modules:
+        step_count = sum(len(module.steps) for module in detail.modules)
         modules = "".join(
             _sop_module_html(index=index, module=module)
             for index, module in enumerate(detail.modules, start=1)
         )
+        route_summary = (
+            '<div class="sop-route-summary">'
+            '<span>本案處理路徑</span>'
+            f'<strong>{len(detail.modules)} 個模組／{step_count} 個步驟</strong>'
+            '<small>先依第一個模組判斷；後續流程可逐段展開</small>'
+            "</div>"
+        )
     else:
         modules = '<div class="sop-empty">目前找不到可顯示的處理 SOP</div>'
+        route_summary = ""
 
     message = ""
     if detail.mapping_message:
@@ -149,7 +158,8 @@ def _sop_panel_html(detail: CaseSopDetail) -> str:
 
     return (
         '<section class="detail-panel sop-panel">'
-        '<h2 class="detail-panel-title">處理 SOP</h2>'
+        '<div class="detail-panel-title" role="heading" aria-level="2">處理 SOP</div>'
+        f"{route_summary}"
         '<div class="sop-scroll">'
         f"{modules}"
         "</div>"
@@ -160,17 +170,20 @@ def _sop_panel_html(detail: CaseSopDetail) -> str:
 
 def _sop_module_html(index: int, module: SopModule) -> str:
     steps = "".join(_sop_step_html(step) for step in module.steps)
+    opened = " open" if index == 1 else ""
     return (
-        '<section class="sop-module">'
-        '<div class="sop-module-heading">'
+        f'<details class="sop-module"{opened}>'
+        '<summary class="sop-module-heading">'
+        '<span class="sop-module-title">'
         f'<span class="sop-module-index">{index}</span>'
-        '<span>'
+        '<span class="sop-module-copy">'
         f'<strong>{escape(module.flow_name)}</strong>'
-        f'<small>{escape(module.sop_id)}</small>'
-        "</span>"
-        "</div>"
+        f'<small>{escape(module.sop_id)}／{len(module.steps)} 個步驟</small>'
+        "</span></span>"
+        '<span class="sop-module-toggle">展開</span>'
+        "</summary>"
         f'<div class="sop-steps">{steps}</div>'
-        "</section>"
+        "</details>"
     )
 
 
@@ -225,24 +238,24 @@ def _case_summary_panel_html(
         (
             _summary_item_html("案件編號", case.case_no),
             _summary_item_html("件號", case.part_no),
-            _summary_item_html("備註", case.note, wide=True),
-            _summary_item_html("本案判定", detail.case_judgement, wide=True),
-            _summary_item_html("主類型", detail.main_type, wide=True),
-            _summary_item_html("實際情境", detail.actual_scenario, wide=True),
-            _summary_item_html("判定條件", detail.condition_text, wide=True),
-            _summary_item_html("判斷結果", case.judgement_result, wide=True),
+            _summary_item_html("本案判定", detail.case_judgement),
+            _summary_item_html("主類型", detail.main_type),
+            _summary_item_html("備註", case.note, span="half"),
+            _summary_item_html("判斷結果", case.judgement_result, span="half"),
         )
     )
     return (
         '<aside class="detail-panel case-summary-panel">'
-        '<h2 class="detail-panel-title">案件摘要</h2>'
+        '<div class="detail-panel-title" role="heading" aria-level="2">案件摘要</div>'
         f'<div class="summary-grid">{items}</div>'
         "</aside>"
     )
 
 
-def _summary_item_html(label: str, value: str, wide: bool = False) -> str:
-    css_class = "summary-item summary-wide" if wide else "summary-item"
+def _summary_item_html(label: str, value: str, span: str = "") -> str:
+    css_class = "summary-item"
+    if span:
+        css_class += f" summary-{span}"
     displayed_value = value or "尚未填寫"
     return (
         f'<div class="{css_class}">'

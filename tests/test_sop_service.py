@@ -51,6 +51,26 @@ class SopServiceTest(TestCase):
                 "condition_text": "台車仍有未完成任務",
                 "entry_node_id": "SOP-02-S01",
             },
+            {
+                "classification_id": "IN-08A",
+                "report_scenario": "上架完仍有剩餘",
+                "main_type": "數量異常",
+                "sub_type": "混料上錯",
+                "display_type": "混料上錯／儲位數量不符",
+                "condition_text": "盤點儲位數量不符",
+                "entry_node_id": "SOP-04-S01",
+                "resolved_entry_node_id": "SOP-05-S01",
+            },
+            {
+                "classification_id": "IN-08E",
+                "report_scenario": "上架完仍有剩餘",
+                "main_type": "數量異常",
+                "sub_type": "暫存未結",
+                "display_type": "暫存未結",
+                "condition_text": "HOPES 與 WES 數量正確且有暫存",
+                "entry_node_id": "SOP-04-S01",
+                "resolved_entry_node_id": "SOP-06-S01",
+            },
         )
         nodes = (
             self._node(
@@ -94,6 +114,33 @@ class SopServiceTest(TestCase):
                 instruction="請資訊部修正資料",
                 node_type="TERMINAL",
                 end_result="資料修復完成",
+            ),
+            self._node(
+                node_id="SOP-04-S01",
+                sop_id="SOP-04",
+                step_no="1",
+                flow_name="剩餘零件原因判斷",
+                instruction="查詢 HOPES、WES 與儲位資料",
+                node_type="TERMINAL",
+                end_result="完成原因判斷",
+            ),
+            self._node(
+                node_id="SOP-05-S01",
+                sop_id="SOP-05",
+                step_no="1",
+                flow_name="混料修正",
+                instruction="取出誤上架零件並放回正確位置",
+                node_type="TERMINAL",
+                end_result="混料修正完成",
+            ),
+            self._node(
+                node_id="SOP-06-S01",
+                sop_id="SOP-06",
+                step_no="1",
+                flow_name="未結釋回與特殊入庫",
+                instruction="執行未結釋回與特殊入庫",
+                node_type="TERMINAL",
+                end_result="特殊入庫完成",
             ),
         )
         self.service = SopService(StubSopRepository(rules, nodes))
@@ -139,6 +186,31 @@ class SopServiceTest(TestCase):
 
         self.assertEqual(detail.modules, ())
         self.assertIn("找不到對應", detail.mapping_message)
+
+    def test_shared_scenario_shows_common_diagnostic_before_classification(self) -> None:
+        detail = self.service.build_case_detail(
+            self._case(abnormal_type="上架完仍有剩餘"),
+            self.catalog,
+        )
+
+        self.assertEqual(
+            [module.flow_name for module in detail.modules],
+            ["剩餘零件原因判斷"],
+        )
+
+    def test_final_classification_uses_resolved_entry_node(self) -> None:
+        detail = self.service.build_case_detail(
+            self._case(
+                abnormal_type="上架完仍有剩餘",
+                classification_id="IN-08E",
+            ),
+            self.catalog,
+        )
+
+        self.assertEqual(
+            [module.flow_name for module in detail.modules],
+            ["未結釋回與特殊入庫"],
+        )
 
     @staticmethod
     def _case(

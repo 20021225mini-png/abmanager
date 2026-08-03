@@ -61,7 +61,15 @@ class SopService:
                 mapping_message=match_message,
             )
 
-        entry_node_ids = self._unique_values(candidates, "entry_node_id")
+        resolved_entry_node_ids = self._unique_values(
+            candidates,
+            "resolved_entry_node_id",
+        )
+        entry_node_ids = (
+            resolved_entry_node_ids
+            if len(candidates) == 1 and len(resolved_entry_node_ids) == 1
+            else self._unique_values(candidates, "entry_node_id")
+        )
         if len(entry_node_ids) != 1:
             message = (
                 match_message

@@ -52,6 +52,44 @@ DASHBOARD_CSS = """
         text-align: right;
     }
 
+    .judgement-preview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 10px 0 14px;
+    }
+
+    .judgement-preview > div {
+        min-width: 0;
+        padding: 11px 12px;
+        border: 1px solid #dce8f7;
+        border-radius: 9px;
+        background: #f7faff;
+    }
+
+    .judgement-preview span,
+    .judgement-preview strong {
+        display: block;
+    }
+
+    .judgement-preview span {
+        margin-bottom: 4px;
+        color: #6a7f9b;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .judgement-preview strong {
+        color: #183960;
+        font-size: .86rem;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .judgement-preview-wide {
+        grid-column: 1 / -1;
+    }
+
     .case-table-wrap {
         width: 100%;
         overflow-x: auto;
@@ -262,9 +300,9 @@ DASHBOARD_CSS = """
 
     .case-details-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
-        gap: 16px;
-        padding: 18px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
         background: #f5f9ff;
         align-items: start;
     }
@@ -279,17 +317,44 @@ DASHBOARD_CSS = """
 
     .detail-panel-title {
         margin: 0;
-        padding: 15px 18px;
+        padding: 11px 14px;
         border-bottom: 1px solid #e5edf8;
         color: var(--hotai-blue-dark);
-        font-size: 1.02rem;
+        font-size: .94rem;
         font-weight: 800;
         letter-spacing: .04em;
     }
 
+    .sop-route-summary {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 14px 0;
+        padding: 10px 12px;
+        border-radius: 9px;
+        background: #f0f6ff;
+        color: #355779;
+        font-size: .78rem;
+    }
+
+    .sop-route-summary > span {
+        font-weight: 800;
+    }
+
+    .sop-route-summary > strong {
+        color: #0754ae;
+        font-size: .84rem;
+    }
+
+    .sop-route-summary > small {
+        color: #6f829a;
+        text-align: right;
+    }
+
     .sop-scroll {
-        max-height: 620px;
-        padding: 14px 16px 18px;
+        max-height: 520px;
+        padding: 12px 14px 14px;
         overflow-y: auto;
         scrollbar-color: #b8c9e0 transparent;
         scrollbar-width: thin;
@@ -302,11 +367,30 @@ DASHBOARD_CSS = """
     .sop-module-heading {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 10px;
         padding: 10px 12px;
+        border: 1px solid #d9e7f8;
         border-radius: 10px;
         background: #edf5ff;
         color: #123f7a;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .sop-module-heading::-webkit-details-marker {
+        display: none;
+    }
+
+    .sop-module-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .sop-module-copy {
+        min-width: 0;
     }
 
     .sop-module-heading strong,
@@ -332,6 +416,27 @@ DASHBOARD_CSS = """
         background: var(--hotai-blue);
         color: white;
         font-weight: 800;
+    }
+
+    .sop-module-toggle {
+        flex: 0 0 auto;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #526d8d;
+        font-size: .7rem;
+        font-weight: 800;
+    }
+
+    details.sop-module[open] .sop-module-toggle {
+        color: transparent;
+        font-size: 0;
+    }
+
+    details.sop-module[open] .sop-module-toggle::after {
+        content: "收合";
+        color: #526d8d;
+        font-size: .7rem;
     }
 
     .sop-steps {
@@ -461,21 +566,22 @@ DASHBOARD_CSS = """
 
     .summary-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        padding: 14px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px 12px 12px;
     }
 
     .summary-item {
         min-width: 0;
-        padding: 11px 12px;
-        border: 1px solid #e3eaf4;
-        border-radius: 9px;
-        background: #f8fafe;
+        min-height: 54px;
+        padding: 8px 10px;
+        border-left: 3px solid #d7e5f7;
+        border-radius: 6px;
+        background: #f7faff;
     }
 
-    .summary-wide {
-        grid-column: 1 / -1;
+    .summary-half {
+        grid-column: span 2;
     }
 
     .summary-label,
@@ -484,17 +590,17 @@ DASHBOARD_CSS = """
     }
 
     .summary-label {
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         color: #6a7f9b;
-        font-size: .72rem;
+        font-size: .68rem;
         font-weight: 800;
     }
 
     .summary-value {
         color: #183960;
-        font-size: .86rem;
+        font-size: .82rem;
         font-weight: 650;
-        line-height: 1.55;
+        line-height: 1.4;
         overflow-wrap: anywhere;
         white-space: pre-wrap;
     }
@@ -515,8 +621,32 @@ DASHBOARD_CSS = """
     }
 
     @media (max-width: 900px) {
+        .judgement-preview {
+            grid-template-columns: 1fr;
+        }
+
+        .judgement-preview-wide {
+            grid-column: auto;
+        }
+
         .case-details-layout {
             grid-template-columns: 1fr;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .summary-half {
+            grid-column: 1 / -1;
+        }
+
+        .sop-route-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .sop-route-summary > small {
+            text-align: left;
         }
 
         .sop-scroll {
