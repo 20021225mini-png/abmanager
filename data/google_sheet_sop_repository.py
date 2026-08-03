@@ -4,7 +4,7 @@ from typing import Any
 
 import pandas as pd
 
-from config.settings import SOP_NODES_CSV_URL, SOP_RULES_CSV_URL
+from config import settings as app_settings
 from data.sop_repository import SopDataset, SopDataSourceError
 
 
