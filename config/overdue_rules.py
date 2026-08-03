@@ -1,10 +1,7 @@
-"""案件逾期規則。
-
-正式門檻尚未確認，因此預設不套用任何時數。
-"""
+"""案件 D+1 警示與 D+3 工作日逾期規則。"""
 
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import time
 from enum import StrEnum
 
 
@@ -18,17 +15,20 @@ class OverdueStatus(StrEnum):
 
 @dataclass(frozen=True)
 class OverdueRule:
-    """單一逾期門檻設定。"""
+    """工作日門檻與每日截止時間。"""
 
-    warning_after: timedelta | None
-    overdue_after: timedelta | None
+    warning_after_business_days: int | None
+    overdue_after_business_days: int | None
+    cutoff_time: time
 
-
-# TODO: 待現場確認正式門檻後，填入 timedelta(hours=...)。
+# D+1 截止後進入警示，D+3 截止後判定逾期。
+# 工作日依台灣週休二日與國定假日判斷。
+# 每日截止時間可依實際下班或案件受理規則調整。
 DEFAULT_OVERDUE_RULE = OverdueRule(
-    warning_after=None,
-    overdue_after=None,
+    warning_after_business_days=1,
+    overdue_after_business_days=3,
+    cutoff_time=time(hour=17, minute=0),
 )
 
-# TODO: 若不同異常類型有不同門檻，可在此加入「異常類型: OverdueRule」。
+# 若不同異常類型要採不同門檻，可在此加入「異常類型: OverdueRule」。
 OVERDUE_RULES_BY_ABNORMAL_TYPE: dict[str, OverdueRule] = {}

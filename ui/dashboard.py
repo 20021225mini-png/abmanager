@@ -10,11 +10,10 @@ from config.settings import (
     PAGE_TITLE,
 )
 from config.texts import (
-    ALL_FILTER,
     APP_TITLE,
     OVERDUE_FILTER_LABELS,
     SORT_OPTIONS,
-    STAGE_ORDER,
+    STAGE_FILTER_ORDER,
 )
 from services.case_service import CaseService, DashboardLoadError
 from services.models import DashboardCase, DashboardFilters, DashboardSnapshot
@@ -47,14 +46,25 @@ def render_dashboard(case_service: CaseService) -> None:
     for warning in snapshot.source_warnings:
         st.warning(warning)
 
+    (
+        search_text,
+        abnormal_type,
+        overdue_status,
+        sort_by,
+    ) = _render_search_and_filters(
+        case_service=case_service,
+        cases=snapshot.cases,
+    )
     stage = _render_stage_filter(
         case_service=case_service,
         cases=snapshot.cases,
     )
-    filters = _render_search_and_filters(
-        case_service=case_service,
-        cases=snapshot.cases,
-        selected_stage=stage,
+    filters = DashboardFilters(
+        search_text=search_text,
+        stage=stage,
+        abnormal_type=abnormal_type,
+        overdue_status=overdue_status,
+        sort_by=sort_by,
     )
     filtered_cases = case_service.filter_and_sort(
         cases=snapshot.cases,
@@ -77,14 +87,13 @@ def _render_stage_filter(
     cases: Sequence[DashboardCase],
 ) -> str:
     counts = case_service.stage_counts(cases)
-    stage_values = (ALL_FILTER, *STAGE_ORDER)
     labels = {
         stage: f"{stage} {counts.get(stage, 0)}"
-        for stage in stage_values
+        for stage in STAGE_FILTER_ORDER
     }
     selected_label = st.radio(
         "案件階段",
-        options=[labels[stage] for stage in stage_values],
+        options=[labels[stage] for stage in STAGE_FILTER_ORDER],
         horizontal=True,
         label_visibility="collapsed",
     )
@@ -96,8 +105,7 @@ def _render_stage_filter(
 def _render_search_and_filters(
     case_service: CaseService,
     cases: Sequence[DashboardCase],
-    selected_stage: str,
-) -> DashboardFilters:
+) -> tuple[str, str, str, str]:
     search_col, type_col, overdue_col, sort_col, refresh_col = st.columns(
         [2.4, 1.3, 1.1, 1.3, 0.55],
         vertical_alignment="bottom",
@@ -130,10 +138,4 @@ def _render_search_and_filters(
             _load_snapshot.clear()
             st.rerun()
 
-    return DashboardFilters(
-        search_text=search_text,
-        stage=selected_stage,
-        abnormal_type=abnormal_type,
-        overdue_status=overdue_status,
-        sort_by=sort_by,
-    )
+    return search_text, abnormal_type, overdue_status, sort_by

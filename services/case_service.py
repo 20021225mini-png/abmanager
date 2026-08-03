@@ -8,8 +8,11 @@ from config.overdue_rules import OverdueStatus
 from config.settings import DATETIME_DISPLAY_FORMAT, LOCAL_TIMEZONE
 from config.texts import (
     ALL_FILTER,
+    COMPLETED_FILTER,
     ON_SITE_CLOSED_TEXT,
     ON_SITE_UNAVAILABLE_TEXT,
+    PENDING_FILTER,
+    PROCESSING_FILTER,
     SHELVING_ENABLED_FINAL_RESOLUTIONS,
     SOP_BY_ABNORMAL_TYPE,
     SORT_NEWEST_FIRST,
@@ -83,15 +86,24 @@ class CaseService:
         else:
             filtered.sort(key=self._overdue_priority_key, reverse=True)
 
+        # 即使選擇「全部」，尚待處理案件仍固定顯示在完成案件之前。
+        filtered.sort(key=lambda case: case.is_completed)
         return tuple(filtered)
 
     @staticmethod
     def stage_counts(cases: Sequence[DashboardCase]) -> dict[str, int]:
-        """計算各前處理階段案件數。"""
-        counts = {ALL_FILTER: len(cases)}
-        for stage in STAGE_ORDER:
-            counts[stage] = sum(case.current_stage == stage for case in cases)
-        return counts
+        """計算互斥的案件生命週期數量。"""
+        pending_count = sum(
+            CaseService._is_pending_case(case) for case in cases
+        )
+        completed_count = sum(case.is_completed for case in cases)
+        processing_count = len(cases) - pending_count - completed_count
+        return {
+            ALL_FILTER: len(cases),
+            PENDING_FILTER: pending_count,
+            PROCESSING_FILTER: processing_count,
+            COMPLETED_FILTER: completed_count,
+        }
 
     @staticmethod
     def abnormal_type_options(
@@ -116,14 +128,31 @@ class CaseService:
         # TODO: 待異常類型對照表確認後，再集中於 config 套用轉換規則。
         situation = self._text(row.get(columns.SITUATION))
         abnormal_type = situation
+        final_resolution = self._text(row.get(columns.FINAL_RESOLUTION))
+        shelving_completed_at_value = row.get(columns.SHELVING_COMPLETED_AT)
+        requires_shelving = (
+            final_resolution in SHELVING_ENABLED_FINAL_RESOLUTIONS
+        )
+        completion_at_value = (
+            shelving_completed_at_value
+            if requires_shelving
+            else row.get(columns.CLOSED_AT)
+        )
+        completion_field_name = (
+            columns.SHELVING_COMPLETED_AT
+            if requires_shelving
+            else columns.CLOSED_AT
+        )
 
         waiting = calculate_waiting_time(
             created_at_value=row.get(columns.CREATED_AT),
-            closed_at_value=row.get(columns.CLOSED_AT),
+            closed_at_value=completion_at_value,
             now=now,
+            completion_field_name=completion_field_name,
         )
         overdue_status = determine_overdue_status(
-            elapsed_seconds=waiting.elapsed_seconds,
+            created_at=waiting.created_at,
+            evaluated_at=waiting.closed_at or now,
             abnormal_type=abnormal_type,
         )
 
@@ -134,8 +163,8 @@ class CaseService:
             else "資料錯誤"
         )
         current_stage = self._text(row.get(columns.STAGE))
-        final_resolution = self._text(row.get(columns.FINAL_RESOLUTION))
         shelving_status = self._text(row.get(columns.SHELVING_STATUS))
+        shelving_completed = requires_shelving and waiting.closed_at is not None
         block = self._build_block(
             floor=row.get(columns.FLOOR),
             layer=row.get(columns.LAYER),
@@ -159,6 +188,7 @@ class CaseService:
             stage_nodes=self._build_stage_nodes(
                 current_stage=current_stage,
                 final_resolution=final_resolution,
+                shelving_completed=shelving_completed,
             ),
             on_site_instruction=self._build_on_site_instruction(
                 final_resolution=final_resolution,
@@ -177,6 +207,12 @@ class CaseService:
             note=self._text(row.get(columns.NOTE)),
             data_errors=errors,
             occurred_at=created_at,
+            is_completed=waiting.closed_at is not None,
+            is_awaiting_shelving=(
+                requires_shelving
+                and bool(final_resolution)
+                and waiting.closed_at is None
+            ),
         )
 
     @staticmethod
@@ -184,7 +220,16 @@ class CaseService:
         case: DashboardCase,
         filters: DashboardFilters,
     ) -> bool:
-        if filters.stage != ALL_FILTER and case.current_stage != filters.stage:
+        if filters.stage == COMPLETED_FILTER:
+            if not case.is_completed:
+                return False
+        elif filters.stage == PENDING_FILTER:
+            if not CaseService._is_pending_case(case):
+                return False
+        elif filters.stage == PROCESSING_FILTER:
+            if case.is_completed or CaseService._is_pending_case(case):
+                return False
+        elif filters.stage != ALL_FILTER:
             return False
         if (
             filters.abnormal_type != ALL_FILTER
@@ -214,6 +259,15 @@ class CaseService:
         return any(keyword in value.casefold() for value in searchable_values)
 
     @staticmethod
+    def _is_pending_case(case: DashboardCase) -> bool:
+        """尚未開始前處理且整案尚未完成。"""
+        return (
+            not case.is_completed
+            and not case.is_awaiting_shelving
+            and case.current_stage == PENDING_FILTER
+        )
+
+    @staticmethod
     def _overdue_priority_key(case: DashboardCase) -> tuple[int, int]:
         status_rank = {
             OverdueStatus.NORMAL: 0,
@@ -229,13 +283,20 @@ class CaseService:
     def _build_stage_nodes(
         current_stage: str,
         final_resolution: str,
+        shelving_completed: bool,
     ) -> tuple[StageNode, ...]:
-        # FINAL_RESOLUTION 一有值，第三節點立即改為實際處理結果。
+        # 待後續上架案件在 SHELVING_COMPLETED_AT 有值前以橘色顯示。
         if final_resolution:
+            result_state = "completed"
+            if (
+                final_resolution in SHELVING_ENABLED_FINAL_RESOLUTIONS
+                and not shelving_completed
+            ):
+                result_state = "followup"
             return (
                 StageNode(label=STAGE_ORDER[0], state="completed"),
                 StageNode(label=STAGE_ORDER[1], state="completed"),
-                StageNode(label=final_resolution, state="completed"),
+                StageNode(label=final_resolution, state=result_state),
             )
 
         try:

@@ -3,12 +3,22 @@
 APP_TITLE = "進出異常案件 Follow 看板"
 
 ALL_FILTER = "全部"
+PENDING_FILTER = "待處理"
+PROCESSING_FILTER = "處理中"
+COMPLETED_FILTER = "已結案"
 DATA_ERROR_TEXT = "資料錯誤"
 
 STAGE_ORDER: tuple[str, ...] = (
     "待處理",
     "處理中",
     "處理結果",
+)
+
+STAGE_FILTER_ORDER: tuple[str, ...] = (
+    ALL_FILTER,
+    PENDING_FILTER,
+    PROCESSING_FILTER,
+    COMPLETED_FILTER,
 )
 
 ON_SITE_UNAVAILABLE_TEXT = "未開放"
@@ -44,7 +54,7 @@ SORT_OPTIONS: tuple[str, ...] = (
 OVERDUE_FILTER_LABELS: dict[str, str] = {
     "ALL": "全部狀態",
     "NORMAL": "正常",
-    "WARNING": "提醒",
+    "WARNING": "警示",
     "OVERDUE": "逾期",
 }
 

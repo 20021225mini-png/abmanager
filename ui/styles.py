@@ -188,6 +188,11 @@ DASHBOARD_CSS = """
         color: #d51019;
     }
 
+    .waiting-badge.completed {
+        background: #edf1f5;
+        color: #607087;
+    }
+
     .stage-flow {
         display: flex;
         align-items: flex-start;
@@ -243,6 +248,16 @@ DASHBOARD_CSS = """
     .stage-node.current .stage-dot {
         background: var(--hotai-red);
         box-shadow: 0 0 0 4px rgba(238, 28, 37, .1);
+    }
+
+    .stage-node.followup {
+        color: #d77900;
+        font-weight: 800;
+    }
+
+    .stage-node.followup .stage-dot {
+        background: #f2a23a;
+        box-shadow: 0 0 0 4px rgba(242, 162, 58, .12);
     }
 
     .case-details {

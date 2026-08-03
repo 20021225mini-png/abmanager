@@ -47,8 +47,9 @@ def calculate_waiting_time(
     created_at_value: Any,
     closed_at_value: Any = None,
     now: datetime | None = None,
+    completion_field_name: str = "CLOSED_AT",
 ) -> WaitingTimeResult:
-    """依建立時間及結案時間計算等待時間。"""
+    """依建立時間及實際完成時間計算等待時間。"""
     created_at = parse_datetime(created_at_value)
     if created_at is None:
         return WaitingTimeResult(
@@ -66,7 +67,7 @@ def calculate_waiting_time(
             display_text="資料錯誤",
             created_at=created_at,
             closed_at=None,
-            error="CLOSED_AT 格式錯誤",
+            error=f"{completion_field_name} 格式錯誤",
         )
 
     end_at = closed_at or now or datetime.now(tz=LOCAL_TIMEZONE)

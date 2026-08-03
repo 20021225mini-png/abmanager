@@ -49,6 +49,8 @@ def _case_row_html(case: DashboardCase) -> str:
         OverdueStatus.WARNING: "warning",
         OverdueStatus.OVERDUE: "overdue",
     }[case.overdue_status]
+    if case.is_completed:
+        status_class = "completed"
     if case.waiting_time_text == DATA_ERROR_TEXT:
         status_class = "error"
 
@@ -68,7 +70,8 @@ def _case_row_html(case: DashboardCase) -> str:
         f"<span>{escape(case.occurred_at_text)}</span>"
         f"<span>{_stage_flow_html(case.stage_nodes)}</span>"
         f'<span>{_badge_html("instruction-badge", case.on_site_instruction)}</span>'
-        f'<span><span class="waiting-badge {status_class}">'
+        f'<span><span class="waiting-badge {status_class}" '
+        'title="數字為實際經過時間；底色依 D+1／D+3 工作日判斷">'
         f"{escape(case.waiting_time_text)}</span></span>"
         f"<span>{escape(case.handler)}</span>"
         "</summary>"

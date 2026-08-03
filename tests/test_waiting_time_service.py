@@ -37,3 +37,14 @@ class WaitingTimeServiceTest(TestCase):
         result = calculate_waiting_time(created_at_value="錯誤時間")
         self.assertEqual(result.display_text, "資料錯誤")
         self.assertEqual(result.error, "CREATED_AT 缺少或格式錯誤")
+
+    def test_completion_field_name_is_used_in_error(self) -> None:
+        result = calculate_waiting_time(
+            created_at_value="2026-07-27 10:00:00",
+            closed_at_value="錯誤時間",
+            completion_field_name="SHELVING_COMPLETED_AT",
+        )
+        self.assertEqual(
+            result.error,
+            "SHELVING_COMPLETED_AT 格式錯誤",
+        )

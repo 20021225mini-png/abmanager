@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from config.overdue_rules import OverdueStatus
+from config.texts import ALL_FILTER
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,8 @@ class DashboardCase:
     note: str
     data_errors: tuple[str, ...]
     occurred_at: datetime | None
+    is_completed: bool
+    is_awaiting_shelving: bool
 
 
 @dataclass(frozen=True)
@@ -54,7 +57,7 @@ class DashboardFilters:
     """案件篩選與排序條件。"""
 
     search_text: str = ""
-    stage: str = "全部"
+    stage: str = ALL_FILTER
     abnormal_type: str = "全部"
     overdue_status: str = "ALL"
     sort_by: str = "逾期優先"
