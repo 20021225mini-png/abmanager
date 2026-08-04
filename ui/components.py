@@ -102,8 +102,8 @@ def _case_row_html(case: DashboardCase, sop_detail: CaseSopDetail) -> str:
         f"<span>{escape(case.handler)}</span>"
         "</summary>"
         '<div class="case-details-layout">'
-        f"{_case_summary_panel_html(case, sop_detail)}"
         f"{_sop_panel_html(sop_detail)}"
+        f"{_case_summary_panel_html(case, sop_detail)}"
         "</div>"
         f"{errors}"
         "</details>"
@@ -241,7 +241,7 @@ def _case_summary_panel_html(
             _summary_item_html("案件編號", case.case_no),
             _summary_item_html("件號", case.part_no),
             _summary_item_html("異常類型", case.abnormal_type),
-            _summary_item_html("備註", case.note),
+            _summary_item_html("備註", case.note, span="full"),
         )
     )
     return (

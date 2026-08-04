@@ -300,7 +300,7 @@ DASHBOARD_CSS = """
 
     .case-details-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
         gap: 12px;
         padding: 14px;
         background: #f5f9ff;
@@ -566,7 +566,7 @@ DASHBOARD_CSS = """
 
     .summary-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         padding: 10px 12px 12px;
     }
@@ -582,6 +582,10 @@ DASHBOARD_CSS = """
 
     .summary-half {
         grid-column: span 2;
+    }
+
+    .summary-full {
+        grid-column: 1 / -1;
     }
 
     .summary-label,
@@ -638,6 +642,10 @@ DASHBOARD_CSS = """
         }
 
         .summary-half {
+            grid-column: 1 / -1;
+        }
+
+        .summary-full {
             grid-column: 1 / -1;
         }
 
