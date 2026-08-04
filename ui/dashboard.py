@@ -18,7 +18,6 @@ from services.models import DashboardCase, DashboardFilters, DashboardSnapshot
 from services.sop_models import SopCatalog
 from services.sop_service import SopLoadError, SopService
 from ui.components import render_case_table
-from ui.judgement import render_judgement_workspace
 from ui.styles import DASHBOARD_CSS
 
 
@@ -47,10 +46,11 @@ def _load_sop_catalog(_sop_service: SopService) -> SopCatalog:
 def render_dashboard(
     case_service: CaseService,
     sop_service: SopService,
-    judgement_service: JudgementService,
-    case_writer: CaseWriter | None,
+    judgement_service: JudgementService | None = None,
+    case_writer: CaseWriter | None = None,
 ) -> None:
-    """顯示完整看板。"""
+    """顯示現場查閱看板；保留舊參數以維持 V11 啟動接線相容。"""
+    _ = judgement_service, case_writer
     st.set_page_config(
         page_title=PAGE_TITLE,
         layout=PAGE_LAYOUT,
@@ -82,9 +82,6 @@ def render_dashboard(
         for warning in sop_catalog.warnings:
             st.warning(warning)
 
-    if success_message := st.session_state.pop("v11_write_success", ""):
-        st.success(success_message)
-
     (
         search_text,
         abnormal_type,
@@ -98,15 +95,6 @@ def render_dashboard(
         case_service=case_service,
         cases=snapshot.cases,
     )
-    saved = render_judgement_workspace(
-        cases=snapshot.cases,
-        catalog=sop_catalog,
-        judgement_service=judgement_service,
-        case_writer=case_writer,
-    )
-    if saved:
-        _load_snapshot.clear()
-        st.rerun()
     filters = DashboardFilters(
         search_text=search_text,
         stage=stage,

@@ -139,9 +139,9 @@ def _sop_panel_html(detail: CaseSopDetail) -> str:
         )
         route_summary = (
             '<div class="sop-route-summary">'
-            '<span>本案處理路徑</span>'
+            '<span>本案處理 SOP</span>'
             f'<strong>{len(detail.modules)} 個模組／{step_count} 個步驟</strong>'
-            '<small>先依第一個模組判斷；後續流程可逐段展開</small>'
+            '<small>依案件既有異常類型自動顯示，請按順序查看</small>'
             "</div>"
         )
     else:
@@ -150,9 +150,10 @@ def _sop_panel_html(detail: CaseSopDetail) -> str:
 
     message = ""
     if detail.mapping_message:
+        displayed_message = _mapping_message_for_display(detail)
         message = (
             '<div class="sop-message">'
-            f"{escape(detail.mapping_message)}"
+            f"{escape(displayed_message)}"
             "</div>"
         )
 
@@ -234,14 +235,13 @@ def _case_summary_panel_html(
     case: DashboardCase,
     detail: CaseSopDetail,
 ) -> str:
+    _ = detail
     items = "".join(
         (
             _summary_item_html("案件編號", case.case_no),
             _summary_item_html("件號", case.part_no),
-            _summary_item_html("本案判定", detail.case_judgement),
-            _summary_item_html("主類型", detail.main_type),
-            _summary_item_html("備註", case.note, span="half"),
-            _summary_item_html("判斷結果", case.judgement_result, span="half"),
+            _summary_item_html("異常類型", case.abnormal_type),
+            _summary_item_html("備註", case.note),
         )
     )
     return (
@@ -263,3 +263,13 @@ def _summary_item_html(label: str, value: str, span: str = "") -> str:
         f'<span class="summary-value">{escape(displayed_value)}</span>'
         "</div>"
     )
+
+
+def _mapping_message_for_display(detail: CaseSopDetail) -> str:
+    """將資料層的分類維護提示轉為現場可理解的查閱訊息。"""
+    message = detail.mapping_message
+    if "classification_id" not in message.casefold() and "CASE 補入" not in message:
+        return message
+    if detail.modules:
+        return "已依案件異常類型顯示共用 SOP，請依實際情況查看對應分支。"
+    return "目前案件資訊可對應多條 SOP，請依異常類型與現場情況確認適用流程。"
