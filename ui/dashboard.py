@@ -11,9 +11,7 @@ from config.texts import (
     SORT_OPTIONS,
     STAGE_FILTER_ORDER,
 )
-from data.case_writer import CaseWriter
 from services.case_service import CaseService, DashboardLoadError
-from services.judgement_service import JudgementService
 from services.models import DashboardCase, DashboardFilters, DashboardSnapshot
 from services.sop_models import SopCatalog
 from services.sop_service import SopLoadError, SopService
@@ -29,6 +27,10 @@ PAGE_TITLE = getattr(
     "進出異常案件 Follow 看板",
 )
 PAGE_LAYOUT = getattr(app_settings, "PAGE_LAYOUT", "wide")
+DEPLOY_VERSION = "V11.6-UI-DETAIL-HARD-FIX"
+
+# 顯示於 Streamlit Manage app 紀錄，方便確認實際部署版本。
+print(f"ABMANAGER_DEPLOY_VERSION={DEPLOY_VERSION}")
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)
@@ -46,8 +48,8 @@ def _load_sop_catalog(_sop_service: SopService) -> SopCatalog:
 def render_dashboard(
     case_service: CaseService,
     sop_service: SopService,
-    judgement_service: JudgementService | None = None,
-    case_writer: CaseWriter | None = None,
+    judgement_service: object | None = None,
+    case_writer: object | None = None,
 ) -> None:
     """顯示現場查閱看板；保留舊參數以維持 V11 啟動接線相容。"""
     _ = judgement_service, case_writer
@@ -110,7 +112,8 @@ def render_dashboard(
         (
             '<div class="dashboard-meta">'
             f"顯示 {len(filtered_cases)}／{len(snapshot.cases)} 筆｜"
-            f"更新時間 {snapshot.loaded_at:%Y-%m-%d %H:%M:%S}"
+            f"更新時間 {snapshot.loaded_at:%Y-%m-%d %H:%M:%S}｜"
+            f"版本 {DEPLOY_VERSION}"
             "</div>"
         ),
         unsafe_allow_html=True,

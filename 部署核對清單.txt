@@ -1,0 +1,23 @@
+異常案件看板部署核對清單
+
+一、GitHub 提交前
+[ ] 分支為 streamlit-app
+[ ] 檔案位於專案根目錄的 ui/，沒有多一層版本資料夾
+[ ] ui/dashboard.py 可搜尋到 V11.6-UI-DETAIL-HARD-FIX
+[ ] ui/dashboard.py 搜尋不到 render_judgement_workspace
+[ ] ui/judgement.py 內容為相容層，函式直接 return False
+[ ] VERSION.txt 第一行為 V11.6-UI-DETAIL-HARD-FIX
+
+二、Streamlit 更新後
+[ ] Manage app 紀錄出現 Updated app!
+[ ] Manage app 紀錄出現 ABMANAGER_DEPLOY_VERSION=V11.6-UI-DETAIL-HARD-FIX
+[ ] 頁面更新時間旁顯示版本 V11.6-UI-DETAIL-HARD-FIX
+
+三、畫面驗收
+[ ] 主列表內容與原版一致
+[ ] 展開案件後左側為處理 SOP，右側為案件摘要，比例約 6:4
+[ ] 案件摘要只有案件編號、件號、異常類型、備註
+[ ] 畫面沒有案件判定、判斷結果輸入框與寫回按鈕
+
+四、判定方式
+GitHub、Manage app 與頁面三處版本一致，且四項畫面驗收皆通過，才視為本次部署完成。

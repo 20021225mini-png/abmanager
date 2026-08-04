@@ -52,44 +52,6 @@ DASHBOARD_CSS = """
         text-align: right;
     }
 
-    .judgement-preview {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin: 10px 0 14px;
-    }
-
-    .judgement-preview > div {
-        min-width: 0;
-        padding: 11px 12px;
-        border: 1px solid #dce8f7;
-        border-radius: 9px;
-        background: #f7faff;
-    }
-
-    .judgement-preview span,
-    .judgement-preview strong {
-        display: block;
-    }
-
-    .judgement-preview span {
-        margin-bottom: 4px;
-        color: #6a7f9b;
-        font-size: .72rem;
-        font-weight: 800;
-    }
-
-    .judgement-preview strong {
-        color: #183960;
-        font-size: .86rem;
-        line-height: 1.5;
-        overflow-wrap: anywhere;
-    }
-
-    .judgement-preview-wide {
-        grid-column: 1 / -1;
-    }
-
     .case-table-wrap {
         width: 100%;
         overflow-x: auto;
@@ -625,14 +587,6 @@ DASHBOARD_CSS = """
     }
 
     @media (max-width: 900px) {
-        .judgement-preview {
-            grid-template-columns: 1fr;
-        }
-
-        .judgement-preview-wide {
-            grid-column: auto;
-        }
-
         .case-details-layout {
             grid-template-columns: 1fr;
         }
