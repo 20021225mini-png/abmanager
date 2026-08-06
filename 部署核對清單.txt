@@ -1,23 +1,38 @@
-異常案件看板部署核對清單
+異常案件看板 V11.11 本機測試與部署核對清單
 
-一、GitHub 提交前
+一、本機測試
+[ ] 先在獨立資料夾執行 py -m streamlit run app.py
+[ ] 頁面版本為 V11.11-COMPACT-CONTROL-ROW-LOCAL
+[ ] 24 小時內顯示 HH時 MM分
+[ ] 24 小時以上顯示 X天 HH時
+[ ] 第二列右側顯示逾期／警示／正常三個膠囊色框
+[ ] 門檻文字為達 3 個工作日／達 1 個工作日／未滿 1 個工作日
+[ ] 圖例色框與下方等待時間使用相同底色與文字色，狀態文字不加粗
+[ ] 已結案等待時間只顯示粗體文字，沒有底色框
+[ ] 不顯示案件篩選與等待時間標題
+[ ] 四個篩選選項與三組色碼說明位於同一個精簡橫列
+[ ] D+1 當日 17:00 前仍為正常，17:00 起轉為警示
+[ ] 全部案件中，已結案案件固定顯示在未結案件後方
+[ ] 重新丈量／資訊修正且尚未完成上架的案件仍留在處理中
+
+二、GitHub 提交前
 [ ] 分支為 streamlit-app
-[ ] 檔案位於專案根目錄的 ui/，沒有多一層版本資料夾
-[ ] ui/dashboard.py 可搜尋到 V11.6-UI-DETAIL-HARD-FIX
+[ ] 檔案放回專案原路徑，沒有多一層版本資料夾
+[ ] ui/dashboard.py 可搜尋到 V11.11-COMPACT-CONTROL-ROW-LOCAL
 [ ] ui/dashboard.py 搜尋不到 render_judgement_workspace
 [ ] ui/judgement.py 內容為相容層，函式直接 return False
-[ ] VERSION.txt 第一行為 V11.6-UI-DETAIL-HARD-FIX
+[ ] VERSION.txt 第一行為 V11.11-COMPACT-CONTROL-ROW-LOCAL
 
-二、Streamlit 更新後
+三、Streamlit 更新後
 [ ] Manage app 紀錄出現 Updated app!
-[ ] Manage app 紀錄出現 ABMANAGER_DEPLOY_VERSION=V11.6-UI-DETAIL-HARD-FIX
-[ ] 頁面更新時間旁顯示版本 V11.6-UI-DETAIL-HARD-FIX
+[ ] Manage app 紀錄出現 ABMANAGER_DEPLOY_VERSION=V11.11-COMPACT-CONTROL-ROW-LOCAL
+[ ] 頁面更新時間旁顯示版本 V11.11-COMPACT-CONTROL-ROW-LOCAL
 
-三、畫面驗收
+四、畫面驗收
 [ ] 主列表內容與原版一致
 [ ] 展開案件後左側為處理 SOP，右側為案件摘要，比例約 6:4
 [ ] 案件摘要只有案件編號、件號、異常類型、備註
 [ ] 畫面沒有案件判定、判斷結果輸入框與寫回按鈕
 
-四、判定方式
+五、判定方式
 GitHub、Manage app 與頁面三處版本一致，且四項畫面驗收皆通過，才視為本次部署完成。

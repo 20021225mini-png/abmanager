@@ -27,7 +27,7 @@ PAGE_TITLE = getattr(
     "進出異常案件 Follow 看板",
 )
 PAGE_LAYOUT = getattr(app_settings, "PAGE_LAYOUT", "wide")
-DEPLOY_VERSION = "V11.6-UI-DETAIL-HARD-FIX"
+DEPLOY_VERSION = "V11.11-COMPACT-CONTROL-ROW-LOCAL"
 
 # 顯示於 Streamlit Manage app 紀錄，方便確認實際部署版本。
 print(f"ABMANAGER_DEPLOY_VERSION={DEPLOY_VERSION}")
@@ -135,12 +135,41 @@ def _render_stage_filter(
         stage: f"{stage} {counts.get(stage, 0)}"
         for stage in STAGE_FILTER_ORDER
     }
-    selected_label = st.radio(
-        "案件階段",
-        options=[labels[stage] for stage in STAGE_FILTER_ORDER],
-        horizontal=True,
-        label_visibility="collapsed",
+    stage_col, legend_col = st.columns(
+        [3.15, 3.5],
+        gap="small",
+        vertical_alignment="center",
     )
+    with stage_col:
+        selected_label = st.radio(
+            "案件階段",
+            options=[labels[stage] for stage in STAGE_FILTER_ORDER],
+            horizontal=True,
+            label_visibility="collapsed",
+            key="stage_filter",
+        )
+    with legend_col:
+        st.markdown(
+            (
+                '<div class="waiting-legend" aria-label="等待時間顏色說明">'
+                '<span class="waiting-legend-item" '
+                'title="D+3 工作日 17:00 起">'
+                '<span class="waiting-legend-status overdue">逾期</span>'
+                '<span>達 3 個工作日</span>'
+                '</span>'
+                '<span class="waiting-legend-item" '
+                'title="D+1 工作日 17:00 起">'
+                '<span class="waiting-legend-status warning">警示</span>'
+                '<span>達 1 個工作日</span>'
+                '</span>'
+                '<span class="waiting-legend-item">'
+                '<span class="waiting-legend-status normal">正常</span>'
+                '<span>未滿 1 個工作日</span>'
+                '</span>'
+                '</div>'
+            ),
+            unsafe_allow_html=True,
+        )
     return next(
         stage for stage, label in labels.items() if label == selected_label
     )

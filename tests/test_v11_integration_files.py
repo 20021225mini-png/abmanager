@@ -8,17 +8,15 @@ class V11IntegrationFilesTest(TestCase):
     def setUp(self) -> None:
         self.root = Path(__file__).resolve().parents[1]
 
-    def test_judgement_ui_contains_required_inputs_and_save_action(self) -> None:
+    def test_judgement_ui_is_a_non_rendering_compatibility_layer(self) -> None:
         source = (self.root / "ui" / "judgement.py").read_text(
             encoding="utf-8"
         )
-        for text in (
-            "案件判定與寫回",
-            "本案判定",
-            "本案實際判斷結果",
-            "儲存判定",
-        ):
-            self.assertIn(text, source)
+        self.assertIn("def render_judgement_workspace", source)
+        self.assertIn("return False", source)
+        self.assertNotIn("import streamlit", source)
+        self.assertNotIn("st.expander", source)
+        self.assertNotIn("st.button", source)
 
     def test_apps_script_updates_only_expected_case_columns(self) -> None:
         source = (self.root / "gas" / "CaseJudgementApi.gs").read_text(

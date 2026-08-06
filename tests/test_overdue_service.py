@@ -56,6 +56,27 @@ class OverdueServiceTest(TestCase):
             OverdueStatus.OVERDUE,
         )
 
+    def test_elapsed_over_24_hours_remains_normal_until_d1_cutoff(self) -> None:
+        """等待顯示可超過一天，但色碼仍依 D+1 17:00 判斷。"""
+        created_at = datetime(2026, 8, 5, 13, 55, tzinfo=TAIPEI)
+
+        self.assertEqual(
+            overdue_service.determine_overdue_status(
+                created_at,
+                datetime(2026, 8, 6, 16, 38, 29, tzinfo=TAIPEI),
+                "儲位遺留",
+            ),
+            OverdueStatus.NORMAL,
+        )
+        self.assertEqual(
+            overdue_service.determine_overdue_status(
+                created_at,
+                datetime(2026, 8, 6, 17, 0, tzinfo=TAIPEI),
+                "儲位遺留",
+            ),
+            OverdueStatus.WARNING,
+        )
+
     def test_after_cutoff_uses_next_business_day_as_d0(self) -> None:
         created_at = datetime(2026, 7, 31, 18, 0, tzinfo=TAIPEI)
 

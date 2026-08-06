@@ -52,6 +52,72 @@ DASHBOARD_CSS = """
         text-align: right;
     }
 
+    .waiting-legend {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px 12px;
+        min-height: 34px;
+        color: #173a70;
+        font-size: .94rem;
+        font-weight: 400;
+        white-space: nowrap;
+    }
+
+    .secondary-control-title {
+        color: var(--hotai-blue-dark);
+        font-size: .84rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* 篩選與等待圖例直接併成單層控制列。 */
+    div[data-testid="stRadio"] {
+        margin: 0;
+        min-height: 34px;
+    }
+
+    div[data-testid="stRadio"] [role="radiogroup"] {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: .7rem;
+        min-height: 34px;
+    }
+
+    .waiting-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 400;
+    }
+
+    .waiting-legend-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        min-height: 28px;
+        padding: 3px 11px;
+        border-radius: 999px;
+        font-weight: 400;
+    }
+
+    .waiting-legend-status.normal {
+        background: #eef3f9;
+        color: #173a70;
+    }
+
+    .waiting-legend-status.warning {
+        background: #fff2cb;
+        color: #b45c00;
+    }
+
+    .waiting-legend-status.overdue {
+        background: #ffe2e2;
+        color: #d51019;
+    }
+
     .case-table-wrap {
         width: 100%;
         overflow-x: auto;
@@ -189,8 +255,12 @@ DASHBOARD_CSS = """
     }
 
     .waiting-badge.completed {
-        background: #edf1f5;
-        color: #607087;
+        min-height: auto;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        color: #173a70;
+        font-weight: 800;
     }
 
     .stage-flow {
@@ -587,6 +657,16 @@ DASHBOARD_CSS = """
     }
 
     @media (max-width: 900px) {
+        div[data-testid="stRadio"],
+        div[data-testid="stRadio"] [role="radiogroup"] {
+            flex-wrap: wrap;
+        }
+
+        .waiting-legend {
+            flex-wrap: wrap;
+            white-space: normal;
+        }
+
         .case-details-layout {
             grid-template-columns: 1fr;
         }

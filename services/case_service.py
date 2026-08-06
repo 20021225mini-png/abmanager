@@ -8,6 +8,7 @@ from config.overdue_rules import OverdueStatus
 from config.settings import DATETIME_DISPLAY_FORMAT, LOCAL_TIMEZONE
 from config.texts import (
     ALL_FILTER,
+    COMPLETION_TIME_MISSING_TEXT,
     COMPLETED_FILTER,
     ON_SITE_CLOSED_TEXT,
     ON_SITE_UNAVAILABLE_TEXT,
@@ -132,15 +133,25 @@ class CaseService:
         requires_shelving = (
             final_resolution in SHELVING_ENABLED_FINAL_RESOLUTIONS
         )
+        closes_after_resolution = bool(final_resolution) and not requires_shelving
+        recorded_closed_at_value = row.get(columns.CLOSED_AT)
+        fallback_closed_at_value = row.get(columns.UPDATED_AT)
         completion_at_value = (
             shelving_completed_at_value
             if requires_shelving
-            else row.get(columns.CLOSED_AT)
+            else self._first_nonblank(
+                recorded_closed_at_value,
+                fallback_closed_at_value if closes_after_resolution else None,
+            )
         )
         completion_field_name = (
             columns.SHELVING_COMPLETED_AT
             if requires_shelving
-            else columns.CLOSED_AT
+            else (
+                f"{columns.CLOSED_AT}/{columns.UPDATED_AT}"
+                if closes_after_resolution
+                else columns.CLOSED_AT
+            )
         )
 
         waiting = calculate_waiting_time(
@@ -174,7 +185,30 @@ class CaseService:
             cart=row.get(columns.ORIGINAL_CART),
         )
 
-        errors = (waiting.error,) if waiting.error else ()
+        missing_completion_time = (
+            closes_after_resolution and completion_at_value in (None, "")
+        )
+        errors = tuple(
+            message
+            for message in (
+                waiting.error,
+                (
+                    "案件已有結案處理結果，但 CLOSED_AT 與 UPDATED_AT 皆缺少"
+                    if missing_completion_time
+                    else None
+                ),
+            )
+            if message
+        )
+        is_completed = closes_after_resolution or waiting.closed_at is not None
+        waiting_time_text = (
+            COMPLETION_TIME_MISSING_TEXT
+            if missing_completion_time
+            else waiting.display_text
+        )
+        waiting_seconds = (
+            None if missing_completion_time else waiting.elapsed_seconds
+        )
         return DashboardCase(
             case_no=self._text(row.get(columns.CASE_NO)),
             block=block,
@@ -193,8 +227,8 @@ class CaseService:
                 final_resolution=final_resolution,
                 shelving_status=shelving_status,
             ),
-            waiting_time_text=waiting.display_text,
-            waiting_seconds=waiting.elapsed_seconds,
+            waiting_time_text=waiting_time_text,
+            waiting_seconds=waiting_seconds,
             overdue_status=overdue_status,
             handler=self._text(row.get(columns.HANDLER)),
             product_type=self._text(row.get(columns.PRODUCT_TYPE)),
@@ -215,7 +249,7 @@ class CaseService:
             ),
             data_errors=errors,
             occurred_at=created_at,
-            is_completed=waiting.closed_at is not None,
+            is_completed=is_completed,
             is_awaiting_shelving=(
                 requires_shelving
                 and bool(final_resolution)
@@ -273,6 +307,18 @@ class CaseService:
             not case.is_completed
             and not case.is_awaiting_shelving
             and case.current_stage == PENDING_FILTER
+        )
+
+    @staticmethod
+    def _first_nonblank(*values: Any) -> Any:
+        """依序取得第一個不是空值的來源欄位。"""
+        return next(
+            (
+                value
+                for value in values
+                if value is not None and str(value).strip()
+            ),
+            None,
         )
 
     @staticmethod

@@ -6,7 +6,7 @@ from typing import Sequence
 import streamlit as st
 
 from config.overdue_rules import OverdueStatus
-from config.texts import DATA_ERROR_TEXT
+from config.texts import COMPLETION_TIME_MISSING_TEXT, DATA_ERROR_TEXT
 from services.models import DashboardCase, StageNode
 from services.sop_models import CaseSopDetail, SopCatalog, SopModule, SopStep
 from services.sop_service import SopService
@@ -75,10 +75,15 @@ def _case_row_html(case: DashboardCase, sop_detail: CaseSopDetail) -> str:
         OverdueStatus.WARNING: "warning",
         OverdueStatus.OVERDUE: "overdue",
     }[case.overdue_status]
+    waiting_title = "數字為實際經過時間；底色依 D+1／D+3 工作日判斷"
     if case.is_completed:
         status_class = "completed"
+        waiting_title = "已結案案件以實際完成時間計算"
+        if case.waiting_time_text == COMPLETION_TIME_MISSING_TEXT:
+            waiting_title = "案件已結案，但完成時間欄位待補"
     if case.waiting_time_text == DATA_ERROR_TEXT:
         status_class = "error"
+        waiting_title = "等待時間資料格式錯誤"
 
     errors = ""
     if case.data_errors:
@@ -97,7 +102,7 @@ def _case_row_html(case: DashboardCase, sop_detail: CaseSopDetail) -> str:
         f"<span>{_stage_flow_html(case.stage_nodes)}</span>"
         f'<span>{_badge_html("instruction-badge", case.on_site_instruction)}</span>'
         f'<span><span class="waiting-badge {status_class}" '
-        'title="數字為實際經過時間；底色依 D+1／D+3 工作日判斷">'
+        f'title="{waiting_title}">'
         f"{escape(case.waiting_time_text)}</span></span>"
         f"<span>{escape(case.handler)}</span>"
         "</summary>"

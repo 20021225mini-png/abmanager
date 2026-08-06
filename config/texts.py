@@ -7,6 +7,7 @@ PENDING_FILTER = "待處理"
 PROCESSING_FILTER = "處理中"
 COMPLETED_FILTER = "已結案"
 DATA_ERROR_TEXT = "資料錯誤"
+COMPLETION_TIME_MISSING_TEXT = "時間待補"
 
 STAGE_ORDER: tuple[str, ...] = (
     "待處理",

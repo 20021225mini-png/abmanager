@@ -37,10 +37,14 @@ def parse_datetime(value: Any) -> datetime | None:
 
 
 def format_elapsed_time(total_seconds: int) -> str:
-    """將累計秒數轉為可超過 24 小時的 HH:MM:SS。"""
-    hours, remainder = divmod(max(total_seconds, 0), 3600)
-    minutes, seconds = divmod(remainder, 60)
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    """未滿 24 小時顯示 HH時 MM分，滿 24 小時顯示 X天 HH時。"""
+    safe_seconds = max(total_seconds, 0)
+    days, day_remainder = divmod(safe_seconds, 24 * 3600)
+    hours, remainder = divmod(day_remainder, 3600)
+    minutes = remainder // 60
+    if days:
+        return f"{days}天 {hours:02d}時"
+    return f"{hours:02d}時 {minutes:02d}分"
 
 
 def calculate_waiting_time(
